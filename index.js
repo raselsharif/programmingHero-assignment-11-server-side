@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion, Collection } = require('mongodb');
+const { MongoClient, ServerApiVersion, Collection, ObjectId } = require('mongodb');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -32,6 +32,8 @@ async function run() {
 const database = client.db("blogDB");
 const blogCollection =database.collection('blogs')
 const categoriesCollection =database.collection('blogCategory')
+const wishlistCollection =database.collection('wishlist')
+
 
 
 // blog CRUD
@@ -41,11 +43,43 @@ app.post('/v1/post-blog', async(req,res)=>{
   const result =await blogCollection.insertOne(blog)
   res.send(result)
 })
+// post wishlist
+app.post('/v1/post-wishlist', async(req,res)=>{
+  const wishlist = req.body;
+  const result = await wishlistCollection.insertOne(wishlist);
+  res.send(result)
+
+})
 app.get('/v1/categories',async(req,res)=>{
   const categories=  categoriesCollection.find();
   const result= await categories.toArray();
   res.send(result)
   
+})
+app.get('/v1/all-blogs',async(req,res)=>{
+  const blogs = blogCollection.find();
+  const result = await blogs.toArray()
+  res.send(result)
+})
+// get blog details by id
+app.get('/v1/blog-details/:id',async(req,res)=>{
+  const id = req.params.id;
+  const filter = {_id : new ObjectId(id)};
+  const result = await blogCollection.findOne(filter)
+  res.send(result)
+})
+// get wishlist
+app.get('/v1/wishlist-by-user', async(req, res)=>{
+const wishlist = wishlistCollection.find();
+const result = await wishlist.toArray()
+res.send(result) 
+})
+// delete single wishlist
+app.delete('/v1/wishlist-delete/:id', async(req,res)=>{
+  const id = req.params.id;
+  const filter = {_id: new ObjectId(id)};
+  const result = await wishlistCollection.deleteOne(filter);
+  res.send(result)
 })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
