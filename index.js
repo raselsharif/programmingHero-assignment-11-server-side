@@ -63,8 +63,14 @@ app.get('/v1/categories',async(req,res)=>{
   res.send(result)
   
 })
+// get all blogs, filter by category, filter by title
 app.get('/v1/all-blogs',async(req,res)=>{
-  const blogs = blogCollection.find();
+  const queryObj = {}
+  const category = req.query.category;
+  if(category){
+    queryObj.category = category;
+  }
+  const blogs = blogCollection.find(queryObj); 
   const result = await blogs.toArray()
   res.send(result)
 })
@@ -114,6 +120,13 @@ app.delete('/v1/wishlist-delete/:id', async(req,res)=>{
   const id = req.params.id;
   const filter = {_id: new ObjectId(id)};
   const result = await wishlistCollection.deleteOne(filter);
+  res.send(result)
+})
+// delete blog
+app.delete('/v1/blog-delete/:id',async(req,res)=>{
+  const id = req.params.id;
+  const filter = {_id: new ObjectId(id)};
+  const result =await blogCollection.deleteOne(filter);
   res.send(result)
 })
     // Send a ping to confirm a successful connection
