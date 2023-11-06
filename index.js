@@ -95,6 +95,20 @@ app.get('/v1/comment-by-post/:id',async(req,res)=>{
   const result = await comments.toArray()
   res.send(result)
 })
+// update blog
+app.put('/v1/blog-update/:id', async(req,res)=>{
+  const blog = req.body;
+  const id= req.params.id;
+  const filter = {_id : new ObjectId(id)}
+  const options ={upsert: true};
+  const updateBlog = {
+    $set:{
+      ...blog
+    }
+  }
+  const result = await blogCollection.updateOne(filter, updateBlog,options)
+res.send(result)
+})
 // delete single wishlist
 app.delete('/v1/wishlist-delete/:id', async(req,res)=>{
   const id = req.params.id;
