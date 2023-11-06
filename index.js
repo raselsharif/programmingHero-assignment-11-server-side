@@ -74,6 +74,12 @@ const wishlist = wishlistCollection.find();
 const result = await wishlist.toArray()
 res.send(result) 
 })
+// get top ten features
+app.get('/v1/top-ten-features',async(req, res)=>{
+  const features = blogCollection.find();
+  const result = await features.toArray();
+  res.send(result)
+})
 // delete single wishlist
 app.delete('/v1/wishlist-delete/:id', async(req,res)=>{
   const id = req.params.id;
