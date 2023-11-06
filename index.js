@@ -33,6 +33,7 @@ const database = client.db("blogDB");
 const blogCollection =database.collection('blogs')
 const categoriesCollection =database.collection('blogCategory')
 const wishlistCollection =database.collection('wishlist')
+const commentsCollection =database.collection('comments')
 
 
 
@@ -49,6 +50,12 @@ app.post('/v1/post-wishlist', async(req,res)=>{
   const result = await wishlistCollection.insertOne(wishlist);
   res.send(result)
 
+})
+// post comment
+app.post('/v1/post-comment', async(req, res)=>{
+  const comment = req.body;
+  const result = await commentsCollection.insertOne(comment);
+  res.send()
 })
 app.get('/v1/categories',async(req,res)=>{
   const categories=  categoriesCollection.find();
@@ -78,6 +85,14 @@ res.send(result)
 app.get('/v1/top-ten-features',async(req, res)=>{
   const features = blogCollection.find();
   const result = await features.toArray();
+  res.send(result)
+})
+// get comment-by-post
+app.get('/v1/comment-by-post/:id',async(req,res)=>{
+  const commentId = req.params.id;
+  const filter = {id:commentId};
+  const comments = commentsCollection.find(filter);
+  const result = await comments.toArray()
   res.send(result)
 })
 // delete single wishlist
