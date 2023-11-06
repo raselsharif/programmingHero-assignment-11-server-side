@@ -66,11 +66,24 @@ app.get('/v1/categories',async(req,res)=>{
 // get all blogs, filter by category, filter by title
 app.get('/v1/all-blogs',async(req,res)=>{
   const queryObj = {}
+  const sortObj={}
+  const limit =parseInt(req.query.limit);
   const category = req.query.category;
+  const sortDate = req.query.sortDate;
+  const sortOrder=req.query.sortOrder;
+  // const dataLimit=req.query.dataLimit;
+  // console.log(req.query);
   if(category){
     queryObj.category = category;
   }
-  const blogs = blogCollection.find(queryObj); 
+  if(sortDate && sortOrder){
+sortObj[sortDate]=sortOrder;
+// console.log(sortOrder);
+  }
+//   if(dataLimit){
+// limitObj.dataLimit=dataLimit;
+//   }
+  const blogs = blogCollection.find(queryObj).sort(sortObj).limit(limit); 
   const result = await blogs.toArray()
   res.send(result)
 })
@@ -82,8 +95,10 @@ app.get('/v1/blog-details/:id',async(req,res)=>{
   res.send(result)
 })
 // get wishlist
-app.get('/v1/wishlist-by-user', async(req, res)=>{
-const wishlist = wishlistCollection.find();
+app.get('/v1/wishlist-by-user/:email', async(req, res)=>{
+  const email = req.params.email;
+  const filter ={user_email: email}
+const wishlist = wishlistCollection.find(filter);
 const result = await wishlist.toArray()
 res.send(result) 
 })
