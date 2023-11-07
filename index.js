@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion, Collection, ObjectId } = require('mongodb');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -35,6 +36,14 @@ const categoriesCollection =database.collection('blogCategory')
 const wishlistCollection =database.collection('wishlist')
 const commentsCollection =database.collection('comments')
 
+const secretKey = "36a03a97cc1ea86f59375baf352d5c81dcc194a96609466ca46400efa233fe13940b525fe1ce5703f93e7712dd39d7e98f8bfa4cca458ec07487732e8d22947";
+// jwt token
+app.post('/v1/access-token',(req,res)=>{
+  const userEmail = req.params.email;
+  console.log(userEmail);
+token= jwt.sign({userEmail}, secretKey)
+res.send(token)
+})
 
 
 // blog CRUD
@@ -71,20 +80,27 @@ app.get('/v1/all-blogs',async(req,res)=>{
   const category = req.query.category;
   const sortDate = req.query.sortDate;
   const sortOrder=req.query.sortOrder;
-  // const dataLimit=req.query.dataLimit;
-  // console.log(req.query);
+  // const title= req.query.sortTitle;
   if(category){
     queryObj.category = category;
   }
+  // if(category || title){
+  //   queryObj.category = category;
+  // }
   if(sortDate && sortOrder){
 sortObj[sortDate]=sortOrder;
-// console.log(sortOrder);
   }
-//   if(dataLimit){
-// limitObj.dataLimit=dataLimit;
-//   }
+  // if(sortTitle){
+  //   queryObj.title = title;
+  // }
   const blogs = blogCollection.find(queryObj).sort(sortObj).limit(limit); 
   const result = await blogs.toArray()
+  res.send(result)
+})
+// get top ten features
+app.get('/v1/top-ten-features',async(req, res)=>{
+  const features = blogCollection.find();
+  const result = await features.toArray();
   res.send(result)
 })
 // get blog details by id
@@ -102,12 +118,7 @@ const wishlist = wishlistCollection.find(filter);
 const result = await wishlist.toArray()
 res.send(result) 
 })
-// get top ten features
-app.get('/v1/top-ten-features',async(req, res)=>{
-  const features = blogCollection.find();
-  const result = await features.toArray();
-  res.send(result)
-})
+
 // get comment-by-post
 app.get('/v1/comment-by-post/:id',async(req,res)=>{
   const commentId = req.params.id;
