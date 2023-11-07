@@ -7,8 +7,13 @@ const cookieParser = require('cookie-parser');
 const port = process.env.PORT || 5000;
 // pass yMmVDKEOXYjDiV96
 // user blogDB
+
+
 // middleware
-app.use(cors())
+app.use(cors({
+  origin:["http://localhost:5173"],
+  credentials: true,
+}))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -24,7 +29,19 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
+const secretKey = "36a03a97cc1ea86f59375baf352d5c81dcc194a96609466ca46400efa233fe13940b525fe1ce5703f93e7712dd39d7e98f8bfa4cca458ec07487732e8d22947";
+//  custom middleware for token verify
+const verify = (req, res, next)=>{
+const token =req?.cookies?.token;
+jwt.verify(token, secretKey,(err, decoded)=>{
+  // console.log(decoded);
+  if(err){
+    return res.status(401).send({status:"unauthorized access!"})
+  }
+  req.user=decoded;
+  next();
+})
+}
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -36,15 +53,25 @@ const categoriesCollection =database.collection('blogCategory')
 const wishlistCollection =database.collection('wishlist')
 const commentsCollection =database.collection('comments')
 
-const secretKey = "36a03a97cc1ea86f59375baf352d5c81dcc194a96609466ca46400efa233fe13940b525fe1ce5703f93e7712dd39d7e98f8bfa4cca458ec07487732e8d22947";
-// jwt token
-app.post('/v1/access-token',(req,res)=>{
-  const userEmail = req.params.email;
-  console.log(userEmail);
-token= jwt.sign({userEmail}, secretKey)
-res.send(token)
-})
 
+// jwt token
+app.post('/v1/access-token',async(req,res)=>{
+  const userEmail = req.body;
+  // console.log(userEmail);
+token= jwt.sign(userEmail, secretKey,{expiresIn: "1h"})
+res
+.cookie("token", token,{
+  httpOnly: true,
+  secure: true,
+  sameSite: "none"
+})
+.send({status: true})
+})
+app.post('/v1/remove-access-token', async(req, res)=>{
+  res
+  .clearCookie("token",{maxAge: 0})
+  .send({status: true, user: "Logged Out"})
+})
 
 // blog CRUD
 app.post('/v1/post-blog', async(req,res)=>{
@@ -64,7 +91,7 @@ app.post('/v1/post-wishlist', async(req,res)=>{
 app.post('/v1/post-comment', async(req, res)=>{
   const comment = req.body;
   const result = await commentsCollection.insertOne(comment);
-  res.send()
+  res.send(result)
 })
 app.get('/v1/categories',async(req,res)=>{
   const categories=  categoriesCollection.find();
@@ -111,8 +138,12 @@ app.get('/v1/blog-details/:id',async(req,res)=>{
   res.send(result)
 })
 // get wishlist
-app.get('/v1/wishlist-by-user/:email', async(req, res)=>{
+app.get('/v1/wishlist-by-user/:email',verify, async(req, res)=>{
   const email = req.params.email;
+  // console.log("from wish:", email, req.user.email);
+  if(email !== req?.user?.email){
+    return res.status(403).send({status: "Forbidden Access!"})
+  }
   const filter ={user_email: email}
 const wishlist = wishlistCollection.find(filter);
 const result = await wishlist.toArray()
