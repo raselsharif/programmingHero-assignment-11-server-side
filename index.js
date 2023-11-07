@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion, Collection, ObjectId } = require('mongodb');
 const express = require('express');
+require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const app = express();
 const cors = require('cors');
@@ -19,7 +20,7 @@ app.use(cookieParser())
 
 
 
-const uri = "mongodb+srv://blogDB:yMmVDKEOXYjDiV96@cluster0.iuscecj.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.URL;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -29,7 +30,7 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-const secretKey = "36a03a97cc1ea86f59375baf352d5c81dcc194a96609466ca46400efa233fe13940b525fe1ce5703f93e7712dd39d7e98f8bfa4cca458ec07487732e8d22947";
+const secretKey = process.env.SECRET_KEY;
 //  custom middleware for token verify
 const verify = (req, res, next)=>{
 const token =req?.cookies?.token;
@@ -45,7 +46,7 @@ jwt.verify(token, secretKey,(err, decoded)=>{
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
 const database = client.db("blogDB");
 const blogCollection =database.collection('blogs')
