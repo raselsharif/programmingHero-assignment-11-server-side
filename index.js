@@ -6,19 +6,20 @@ const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const port = process.env.PORT || 5000;
-// pass yMmVDKEOXYjDiV96
-// user blogDB
-
 
 // middleware
 app.use(cors({
-  origin:["http://localhost:5173"],
+  origin:[
+    "http://localhost:5173" , 
+  "https://rasel-blog-web.web.app", 
+  "https://rasel-blog-web.firebaseapp.com"],
   credentials: true,
 }))
 app.use(express.json())
 app.use(cookieParser())
 
 
+const secretKey = process.env.SECRET_KEY;
 
 const uri = process.env.URL;
 
@@ -30,7 +31,6 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-const secretKey = process.env.SECRET_KEY;
 //  custom middleware for token verify
 const verify = (req, res, next)=>{
 const token =req?.cookies?.token;
@@ -70,7 +70,7 @@ res
 })
 app.post('/v1/remove-access-token', async(req, res)=>{
   res
-  .clearCookie("token",{maxAge: 0})
+  .clearCookie("token",{maxAge: 0,sameSite:"none", secure:true})
   .send({status: true, user: "Logged Out"})
 })
 
