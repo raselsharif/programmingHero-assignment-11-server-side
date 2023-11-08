@@ -10,9 +10,11 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin:[
-    "http://localhost:5173" , 
+    // "http://localhost:5173" , 
   "https://rasel-blog-web.web.app", 
-  "https://rasel-blog-web.firebaseapp.com"],
+  "https://rasel-blog-web.firebaseapp.com",
+"https://b8a11-client-side-raselsharif.vercel.app"
+],
   credentials: true,
 }))
 app.use(express.json())
